@@ -13,7 +13,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/eventpay_manager_development
+      DATABASE_URL: postgres://postgres:password@db:5432/we_asked_100_people_development
       RAILS_ENV: development
     stdin_open: true
     tty: true
@@ -25,7 +25,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: eventpay_manager_development
+      POSTGRES_DB: we_asked_100_people_development
 
 volumes:
   postgres_data:

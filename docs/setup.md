@@ -1,4 +1,4 @@
-# EventPay Manager - セットアップガイド
+# WE ASKED 100 PEOPLE - セットアップガイド
 
 ## 必要な環境
 
@@ -10,7 +10,7 @@
 ### 1. リポジトリクローン
 ```bash
 git clone [repository-url]
-cd eventpay_manager
+cd WE-ASKED-100-PEOPLE
 ```
 
 ### 2. 環境変数設定
@@ -19,8 +19,9 @@ cd eventpay_manager
 cp .env.example .env.local
 
 # 以下の値を設定
-SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx
-APP_DOMAIN=localhost:3000
+DATABASE_URL=postgresql://postgres:password@db:5432/we_asked_100_people_development
+RAILS_ENV=development
+SECRET_KEY_BASE=your-secret-key-base
 ```
 
 ### 3. Docker環境構築
