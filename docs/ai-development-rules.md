@@ -1,4 +1,4 @@
-# EventPay Manager - AI開発ルール
+# WE ASKED 100 PEOPLE - AI開発ルール
 
 ## 基本方針
 

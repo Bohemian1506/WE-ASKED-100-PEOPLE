@@ -1,4 +1,4 @@
-# EventPay Manager - GitHub ワークフロー
+# WE ASKED 100 PEOPLE - GitHub ワークフロー
 
 ## GitHub CLI (gh) セットアップ
 

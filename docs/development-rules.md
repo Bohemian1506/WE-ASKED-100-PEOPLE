@@ -1,4 +1,4 @@
-# EventPay Manager - 開発ルール
+# WE ASKED 100 PEOPLE - 開発ルール
 
 ## コーディング規約
 
