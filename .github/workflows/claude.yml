@@ -1,4 +1,4 @@
-name: Claude Code Assistant - EventPay Manager
+name: Claude Code Assistant - WE ASKED 100 PEOPLE
 
 on:
   issue_comment:
@@ -6,17 +6,20 @@ on:
   pull_request_review_comment:
     types: [created]
   issues:
-    types: [opened]
+    types: [opened, assigned]
+  pull_request:
+    types: [opened, synchronize]
   pull_request_review:
     types: [submitted]
 
 jobs:
   claude-assistant:
-    # @claudeメンションがある場合のみ実行
+    # @claudeメンションがある場合または新しいPRの場合に実行
     if: |
       contains(github.event.comment.body, '@claude') || 
       contains(github.event.review.body, '@claude') || 
-      contains(github.event.issue.body, '@claude')
+      contains(github.event.issue.body, '@claude') ||
+      (github.event_name == 'pull_request' && github.event.action == 'opened')
     
     runs-on: ubuntu-latest
     
@@ -32,24 +35,72 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Run Claude Code Action
+      - name: Run Claude Code Review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # 初学者向けEventPay Managerプロジェクト用のカスタム指示
           custom-instructions: |
-            EventPay Managerは初学者向けのRailsプロジェクトです。以下を重視してください：
+            「100人に聞きました」形式のクイズデータ収集アプリのレビューを行います。
             
-            1. **学習重視**: コードには日本語コメントを適切に付ける
-            2. **シンプル実装**: 複雑な設定や機能は避ける
-            3. **Rails基本**: MVCパターンを明確にした実装
-            4. **Docker環境**: Docker + Docker Compose前提での回答
-            5. **段階的説明**: 初学者にも理解できる段階的な説明
+            **プロジェクト概要:**
+            - 質問作成・回答収集・自動集計システム
+            - Rails 8標準認証 + Cookie/UUID識別
+            - 類似回答の自動グルーピング機能
             
-            技術スタック:
-            - Ruby 3.3.0 + Rails 8.x
+            **レビュー重点項目:**
+            1. **セキュリティ**: SQLインジェクション、CSRF、認証・認可
+            2. **Rails 8準拠**: 新機能（Solid Queue/Cache）の適切な使用
+            3. **パフォーマンス**: N+1問題、クエリ最適化、インデックス設計
+            4. **データ整合性**: 正規化処理、重複防止ロジック
+            5. **UI/UX**: Bootstrap 5 + Stimulus実装
+            6. **日本語化**: i18n対応、文字列処理（全角/半角等）
+            
+            **技術スタック:**
+            - Ruby 3.3.6 + Rails 8.0.0
             - PostgreSQL 15
-            - Bootstrap 5 + Stimulus
-            - Devise (基本設定)
+            - Bootstrap 5.3 + Stimulus
+            - Solid Queue/Cache
             - Docker環境
+            
+            問題発見時は具体的な改善案と理由を提示してください。
+
+  claude-security-review:
+    # セキュリティ専用レビュー（PR開設時のみ）
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Run Claude Security Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          custom-instructions: |
+            セキュリティ専門レビューアーとしてPRを審査します。
+            
+            **セキュリティチェックリスト:**
+            1. **SQLインジェクション**: パラメータ化クエリ、Strong Parameters
+            2. **CSRF攻撃**: authenticity_token、SameSite Cookie
+            3. **認証バイパス**: セッション管理、Cookie検証
+            4. **XSS攻撃**: サニタイゼーション、CSP設定
+            5. **機密情報漏洩**: ログ出力、エラーメッセージ
+            6. **認可制御**: アクセス制御、権限チェック
+            7. **入力検証**: バリデーション、文字数制限
+            8. **セッション固定**: セッション再生成
+            
+            **重要度ランク付け:**
+            - 🔴 Critical: 即座に修正が必要
+            - 🟡 Warning: 推奨改善項目
+            - 🟢 Info: 参考情報
+            
+            発見したセキュリティ課題には重要度と修正方法を明記してください。
