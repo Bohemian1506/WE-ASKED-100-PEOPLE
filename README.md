@@ -204,9 +204,16 @@ WE-ASKED-100-PEOPLE/
 
 ### Git運用
 - **mainブランチ保護**: 直接プッシュ禁止
-- **機能開発**: `feature/feature-name`
-- **バグ修正**: `fix/bug-description`
 - **PR必須**: レビュー後マージ
+
+#### ブランチ命名規則
+- **機能開発**: `feature/description`（例：`feature/answer-grouping`）
+- **バグ修正**: `fix/description`（例：`fix/duplicate-answers`）
+- **ドキュメント**: `docs/description`（例：`docs/update-readme`）
+- **リファクタリング**: `refactor/description`（例：`refactor/normalize-service`）
+- **設定変更**: `config/description`（例：`config/docker-settings`）
+
+**注意**: ブランチ名は必ず英語で記述し、日本語文字は使用しない
 
 ### 回答正規化ロジック
 ```ruby
