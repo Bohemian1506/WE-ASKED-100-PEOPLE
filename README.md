@@ -1,47 +1,49 @@
-# EventPay Manager
-
-飲み会の幹事負担を軽減する、参加者登録不要の出欠・精算管理アプリ
+# WE ASKED 100 PEOPLE
 
 ## 📋 プロジェクト概要
 
-### 解決する課題
-- 1次会→2次会→3次会と続く飲み会で、各回の参加者管理が煩雑
-- 誰が参加費を払ったか/払ってないかの把握が大変
-- 特に2次会以降は突発的に決まるため、その場での管理が困難
+「100人に聞きました」形式のクイズ用データ収集アプリケーション。質問を作成し、多くの人から回答を集めて自動集計する、シンプルで使いやすいWebサービスです。
 
-### 特徴
-- **参加者登録不要**: 共有URLからアクセス、名前とメールのみで参加
-- **二重認証システム**: 幹事（Rails認証）+ 参加者（トークンベース）
-- **n次会対応**: 1次会、2次会、3次会...を柔軟に管理
-- **リアルタイム支払い管理**: 各回ごとの支払い状況を即座に更新
+### 解決する課題
+- クイズ番組のような「100人に聞きました」形式のデータ収集が困難
+- 類似回答のグルーピングを手動で行うのが大変
+- 回答収集から集計までを一元管理するツールがない
+
+### 主な特徴
+- 📝 **簡単な質問作成**: 質問タイトルと締切を設定するだけ
+- 🔗 **短縮URL共有**: `/q/xxxxx` 形式の短いURLで簡単共有
+- 🚫 **登録不要で回答**: 回答者はアカウント登録不要
+- 🤖 **自動グルーピング**: 類似回答を自動的にまとめて集計
+- 📊 **ランキング表示**: 上位10件の回答をランキング形式で表示
+- 🐦 **SNS連携**: X（Twitter）でワンクリックシェア
 
 ## 🛠️ 技術スタック
 
 - **Ruby**: 3.3.6
-- **Rails**: 8.0.0 (標準認証使用)
+- **Rails**: 8.0.0（標準認証使用）
 - **Database**: PostgreSQL 15
-- **CSS**: Bootstrap 5.3 + ViewComponent
+- **CSS**: Bootstrap 5.3
 - **JavaScript**: Stimulus
-- **Mail**: SendGrid
 - **Development**: Docker Compose
-- **Background Jobs**: solid_queue (Rails 8標準)
-- **Cache**: solid_cache (Rails 8標準)
+- **Background Jobs**: Solid Queue（Rails 8標準）
+- **Cache**: Solid Cache（Rails 8標準）
+- **CI/CD**: GitHub Actions
 
 ## 🔐 認証システム
 
-### 幹事認証
+### 質問作成者認証
 - Rails 8標準認証（`has_secure_password`）
 - メール + パスワードでログイン
-- 複数イベントの作成・管理が可能
+- 複数の質問を作成・管理可能
 
-### 参加者認証
-- トークンベース認証（登録不要）
-- 共有URLから名前・メールで参加登録
-- 編集用URLをメール送信（7日間有効）
+### 回答者識別
+- Cookie/UUID方式（登録不要）
+- 重複回答を自動防止
+- 30日間のCookie保持
 
 ```ruby
-# 参加者トークン有効期限
-PARTICIPANT_TOKEN_EXPIRES_IN = 7.days
+# Cookie有効期限
+RESPONDENT_COOKIE_EXPIRES_IN = 30.days
 ```
 
 ## 🚀 クイックスタート
@@ -54,11 +56,11 @@ PARTICIPANT_TOKEN_EXPIRES_IN = 7.days
 ```bash
 # リポジトリクローン
 git clone [repository-url]
-cd eventpay_manager
+cd WE-ASKED-100-PEOPLE
 
 # 環境変数設定
 cp .env.example .env.local
-# .env.localにSendGridのAPIキーを設定
+# 必要に応じて.env.localを編集
 
 # Docker環境起動
 docker-compose up -d
@@ -74,49 +76,44 @@ docker-compose exec web rails db:migrate
 ### 3. 環境変数
 ```bash
 # .env.local
-SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx
-APP_DOMAIN=localhost:3000
+DATABASE_URL=postgresql://postgres:password@db:5432/we_asked_100_people_development
+RAILS_ENV=development
+SECRET_KEY_BASE=your-secret-key-base
 ```
 
 ## 💾 データベース構造
 
-- **users**: 幹事（Rails 8標準認証）
-- **events**: イベント（share_token含む）
-- **rounds**: 各回（1次会、2次会等）
-- **participants**: 参加者（edit_token含む）
-- **participations**: 参加状況（参加/支払い管理）
+- **users**: 質問作成者（Rails 8標準認証）
+- **questions**: 質問（短縮ID、締切管理）
+- **answers**: 回答（正規化処理済み）
+- **answer_groups**: 回答グループ（自動グルーピング）
 
 ## 📱 主要機能
 
-### 1. イベント管理
-- 幹事がn次会を含むイベントを作成・管理
-- 基本情報（名前、日付、説明）+ 各回の詳細設定
-- QRコード付き共有URL生成
+### 1. 質問管理
+- 質問の作成・編集・削除
+- 締切自動管理（デフォルト2週間）
+- カード形式での一覧表示
+- 短縮URL自動生成
 
-### 2. 参加者登録
-- 共有URLから登録（ユーザー登録不要）
-- 名前とメールアドレスのみ必要
-- 各回への参加を個別に選択可能
-- 編集用URLをメール自動送信
+### 2. 回答収集
+- 自由記述形式（50文字まで、絵文字OK）
+- Cookie/UUIDによる重複防止
+- 締切後の自動受付停止
+- 回答後のSNSシェア誘導
 
-### 3. 支払い管理
-- 幹事が参加者の支払い状況を管理
-- 各回ごとに独立して管理
-- チェックボックスで簡単更新
+### 3. 自動集計
+- 類似回答の自動グルーピング
+  - 大文字/小文字の統一
+  - 全角/半角の正規化
+  - 空白の除去
+- 上位10件のランキング表示
+- 手動グルーピング調整機能
 
-### 4. リマインダー機能
-- 未払い参加者への一括メール送信
-- SendGrid経由での配信
-- 送信履歴の記録
-
-## 🧩 ViewComponent
-
-UIコンポーネントはViewComponentで管理：
-
-- **ParticipantCardComponent**: 参加者カード表示
-- **PaymentStatusComponent**: 支払い状況バッジ
-- **RoundCardComponent**: n次会カード表示
-- **EventHeaderComponent**: イベントヘッダー
+### 4. SNS連携
+- X（Twitter）シェアボタン
+- URLコピー機能
+- OGPタグ対応（予定）
 
 ## 💻 開発コマンド
 
@@ -142,6 +139,9 @@ docker-compose exec web rails db:migrate
 
 # リセット（開発環境）
 docker-compose exec web rails db:drop db:create db:migrate
+
+# Seedデータ投入
+docker-compose exec web rails db:seed
 ```
 
 ### テスト・品質チェック
@@ -159,64 +159,63 @@ docker-compose exec web bundle exec rubocop -A
 ## 📁 プロジェクト構造
 
 ```
-eventpay_manager/
+WE-ASKED-100-PEOPLE/
 ├── app/
-│   ├── components/              # ViewComponent
-│   ├── controllers/
-│   ├── models/
-│   ├── views/
-│   └── assets/
-│       └── stylesheets/
-│           ├── base/            # 基本設定
-│           ├── components/      # ViewComponent用
-│           ├── pages/           # ページ固有
-│           └── utilities/       # ユーティリティ
+│   ├── controllers/             # コントローラー
+│   ├── models/                 # モデル
+│   ├── views/                  # ビュー
+│   ├── services/               # ビジネスロジック
+│   │   ├── answer_normalizer.rb      # 回答正規化
+│   │   └── answer_grouping_service.rb # グルーピング処理
+│   └── javascript/
+│       └── controllers/        # Stimulusコントローラー
 ├── config/
+│   └── locales/               # 日本語化ファイル
 ├── db/
-├── docs/                        # 開発ドキュメント
-│   ├── development-rules.md     # 開発ルール
-│   ├── setup.md                # 詳細セットアップ
-│   ├── github-workflow.md      # Git運用ルール
-│   └── ai-development-rules.md # AI協調開発
-├── spec/                        # テスト
+├── docs/                      # ドキュメント
+│   ├── requirements.md        # 要件定義書
+│   ├── development-plan.md    # 開発計画書
+│   ├── database-design.md     # DB設計書
+│   ├── ui-flow.md            # UI/UX設計書
+│   └── technical-specifications.md # 技術仕様書
+├── spec/                      # テスト
 ├── docker-compose.yml
 ├── Dockerfile
-└── CLAUDE.md                    # プロジェクト詳細仕様
+└── CLAUDE.md                  # AI開発用仕様書
 ```
 
 ## 📖 開発ドキュメント
 
 詳細な開発情報は以下を参照：
 
-- **[CLAUDE.md](CLAUDE.md)** - プロジェクト詳細仕様・技術スタック
-- **[開発ルール](docs/development-rules.md)** - コーディング規約・実装ガイド
-- **[セットアップガイド](docs/setup.md)** - 詳細な環境構築手順
-- **[GitHubワークフロー](docs/github-workflow.md)** - Git運用・PR管理
-- **[AI開発ルール](docs/ai-development-rules.md)** - AI協調開発ガイド
+- **[要件定義書](docs/requirements.md)** - 機能要件・非機能要件
+- **[開発計画書](docs/development-plan.md)** - フェーズ別実装計画
+- **[DB設計書](docs/database-design.md)** - テーブル定義・ER図
+- **[UI/UX設計書](docs/ui-flow.md)** - 画面遷移・デザイン
+- **[技術仕様書](docs/technical-specifications.md)** - 実装詳細
 
 ## 🔧 開発ルール
 
 ### コーディング規約
 - **Ruby**: RuboCop準拠
-- **CSS**: BEM記法 + Bootstrapユーティリティ
+- **CSS**: Bootstrap 5ユーティリティ活用
 - **JavaScript**: Stimulusコントローラー
 - **テスト**: RSpec（単体・統合テスト）
 
 ### Git運用
-- **mainブランチでの直接作業禁止**
+- **mainブランチ保護**: 直接プッシュ禁止
 - **機能開発**: `feature/feature-name`
 - **バグ修正**: `fix/bug-description`
-- **GitHub CLI**: `gh`コマンドでPR管理
+- **PR必須**: レビュー後マージ
 
-### ViewComponent
+### 回答正規化ロジック
 ```ruby
-# app/components/participant_card_component.rb
-class ParticipantCardComponent < ViewComponent::Base
-  def initialize(participant:, show_edit_link: false)
-    @participant = participant
-    @show_edit_link = show_edit_link
-  end
-  # ...
+# app/services/answer_normalizer.rb
+def self.normalize(text)
+  text.strip                     # 前後の空白削除
+      .downcase                   # 小文字統一
+      .tr('０-９ａ-ｚＡ-Ｚ', '0-9a-za-z')  # 全角→半角
+      .gsub(/[[:space:]]+/, '')   # 空白削除
 end
 ```
 
@@ -227,7 +226,7 @@ end
 docker-compose exec web bundle exec rspec
 
 # 特定のテスト
-docker-compose exec web bundle exec rspec spec/models/event_spec.rb
+docker-compose exec web bundle exec rspec spec/models/question_spec.rb
 
 # カバレッジ付き実行
 docker-compose exec web COVERAGE=true bundle exec rspec
@@ -235,10 +234,24 @@ docker-compose exec web COVERAGE=true bundle exec rspec
 
 ## 🚨 重要ポイント
 
-- **セキュリティ**: トークン暗号化、CSRF保護
-- **パフォーマンス**: N+1対策、適切なインデックス
-- **メール送信**: 開発環境はletter_opener、本番はSendGrid
-- **認証**: 幹事は永続ログイン、参加者は7日間限定アクセス
+- **セキュリティ**: CSRF対策、SQLインジェクション対策
+- **パフォーマンス**: N+1対策、適切なインデックス設定
+- **重複防止**: Cookie/UUIDによる同一人物の複数回答防止
+- **自動処理**: 締切時刻での自動クローズ（Solid Queue）
+
+## 📈 今後の拡張予定
+
+### Phase 2
+- レスポンシブデザイン対応
+- より高度な類似判定（形態素解析）
+- グラフによる視覚的表示
+- 複数選択式の質問形式
+
+### Phase 3
+- API公開
+- 多言語対応
+- リアルタイム集計
+- 有料プラン（無制限回答数など）
 
 ## 📞 サポート
 
@@ -247,4 +260,4 @@ docker-compose exec web COVERAGE=true bundle exec rspec
 
 ---
 
-*EventPay Manager - 飲み会をもっとスマートに*
+*WE ASKED 100 PEOPLE - クイズデータ収集をもっとスマートに*
