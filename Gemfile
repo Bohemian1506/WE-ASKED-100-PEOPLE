@@ -85,7 +85,7 @@ gem "jquery-rails"             # Bootstrap用
 gem "bootstrap-icons-helper"   # アイコン
 gem "view_component", "~> 3.0" # UIコンポーネント
 gem "kaminari"                 # ページネーション
-gem "sassc-rails"              # Bootstrap SCSS用
+gem "sassc-rails", require: false    # Bootstrap SCSS用
 
 # 日本語化・国際化
 gem "rails-i18n"         # Rails標準機能の日本語化
