@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   web:
     container_name: we_asked_100_web
