@@ -83,7 +83,7 @@ gem "bcrypt", "~> 3.1.7"  # has_secure_password用
 gem "bootstrap", "~> 5.3.0"    # CSSフレームワーク
 gem "jquery-rails"             # Bootstrap用
 gem "bootstrap-icons-helper"   # アイコン
-gem "view_component", "~> 3.0" # UIコンポーネント
+gem "view_component", "~> 4.0" # UIコンポーネント
 gem "kaminari"                 # ページネーション
 gem "sassc-rails", require: false    # Bootstrap SCSS用
 
