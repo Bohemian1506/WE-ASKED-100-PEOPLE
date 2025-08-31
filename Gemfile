@@ -76,7 +76,7 @@ group :test do
   gem "database_cleaner-active_record" # RSpecでのDB管理用
 end
 
-#認証・セキュリティ
+# 認証・セキュリティ
 gem "bcrypt", "~> 3.1.7"  # has_secure_password用
 
 # フロントエンド・UI
